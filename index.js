@@ -18,8 +18,23 @@ function createStore(reducer) {
 		};
 	};
 
+	const dispatch = (action) => {
+		state = reducer(state, action);
+		listeners.forEach((listener) => listener());
+	};
+
 	return {
 		getState,
 		subscribe,
+		dispatch,
 	};
+}
+
+// App Code
+function todos(state = [], action) {
+	if (action.type === "ADD_TODO") {
+		return state.concat([action.todo]);
+	}
+
+	return state;
 }
