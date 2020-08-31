@@ -35,6 +35,7 @@
 			const ADD_GOAL = "ADD_GOAL";
 			const REMOVE_GOAL = "REMOVE_GOAL";
 
+			// Action
 			function addTodoAction(todo) {
 				return {
 					type: ADD_TODO,
@@ -70,6 +71,7 @@
 				};
 			}
 
+			//Reducers
 			function todos(state = [], action) {
 				switch (action.type) {
 					case ADD_TODO:
@@ -100,7 +102,9 @@
 				}
 			}
 
-			function checkAndDispatch(store, action) {
+			// Redux middleware
+
+			const checker = (store) => (next) => (action) => {
 				if (
 					action.type === ADD_TODO &&
 					action.todo.name.toLowerCase().includes("bitcoin")
@@ -115,14 +119,16 @@
 					return alert("Nope. That's a bad idea.");
 				}
 
-				return store.dispatch(action);
-			}
+				return next(action);
+			};
 
+			// Root Reducer
 			const store = Redux.createStore(
 				Redux.combineReducers({
 					todos,
 					goals,
-				})
+				}),
+				Redux.applyMiddleware(checker)
 			);
 
 			store.subscribe(() => {
@@ -141,8 +147,7 @@
 				const name = input.value;
 				input.value = "";
 
-				checkAndDispatch(
-					store,
+				store.dispatch(
 					addTodoAction({
 						name,
 						complete: false,
@@ -156,8 +161,7 @@
 				const name = input.value;
 				input.value = "";
 
-				checkAndDispatch(
-					store,
+				store.dispatch(
 					addGoalAction({
 						id: generateId(),
 						name,
@@ -184,7 +188,7 @@
 				const node = document.createElement("li");
 				const text = document.createTextNode(todo.name);
 				const removeBtn = createRemoveButton(() => {
-					checkAndDispatch(store, removeTodoAction(todo.id));
+					store.dispatch(removeTodoAction(todo.id));
 				});
 
 				node.appendChild(text);
@@ -193,7 +197,7 @@
 					? "line-through"
 					: "none";
 				node.addEventListener("click", () => {
-					checkAndDispatch(store, toggleTodoAction(todo.id));
+					store.dispatch(toggleTodoAction(todo.id));
 				});
 
 				document.getElementById("todos").appendChild(node);
@@ -204,7 +208,7 @@
 				const text = document.createTextNode(goal.name);
 
 				const removeBtn = createRemoveButton(() => {
-					checkAndDispatch(store, removeGoalAction(goal.id));
+					store.dispatch(removeGoalAction(goal.id));
 				});
 
 				node.appendChild(text);
